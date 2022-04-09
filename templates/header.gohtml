@@ -1,0 +1,16 @@
+{{define "header"}}
+<div id="header">
+  <menu>
+    {{if .Logged}}
+        <div>It's me {{ .User.FirstName }}</div>
+        <div><a href="/myquestions">My Questions</a></div>
+        <div><a href="/myanswers">My Answers</a></div>
+        <div><a href="/mycomments">My Comments</a></div>
+        <div id="notify">Notifications</div>
+        <div id="logout"><a href="/logout">Logout</a></div>
+    {{else}}
+        <div id="register"><a href="./register">Register</a></div>
+    {{end}}
+  </menu>
+</div>
+{{end}}
