@@ -17,7 +17,7 @@ Admin is moderator by default, however, a student can also become a moderator.
 
 ## Authors
 
-[//]: # (- [Sagar](https://github.com/sagarishere))
+[//]: "# (- [Sagar](https://github.com/sagarishere))"
 
 ## License
 
