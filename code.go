@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type User struct {
@@ -64,6 +68,114 @@ type Tag struct {
 	TagName string // name of the tag
 }
 
+// create an sqlite database named 'qaApp' if it doesn't exist
+func createDatabase() {
+	if _, err := os.Stat("qaApp.db"); os.IsNotExist(err) {
+		db, err := sql.Open("sqlite3", "qaApp.db")
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer db.Close()
+		sqlStmt := `
+		create table users (
+			id integer not null primary key autoincrement,
+			first_name text,
+			last_name text,
+			username text,
+			unique_id int,
+			password text,
+			user_tags text,
+			user_type text,
+			user_image text,
+			super_user bool,
+			mod_tags text,
+			mod_questions text,
+			badges text
+		);
+		`
+		// create table questions, answers, tags, badges
+		sqlStmt2 := `
+		create table questions (
+			id integer not null primary key autoincrement,
+			heading text,
+			body text,
+			tags text,
+			image text,
+			date text,
+			time text,
+			user text,
+			answers text,
+			votes text,
+			views int,
+			open bool
+		);
+		`
+		sqlStmt3 := `
+		create table answers (
+			id integer not null primary key autoincrement,
+			body text,
+			date text,
+			time text,
+			user text,
+			votes text,
+			views int,
+			qn int
+		);
+		`
+		sqlStmt4 := `
+		create table tags (
+			id integer not null primary key autoincrement,
+			name text
+		);
+		`
+		sqlStmt5 := `
+		create table badges (
+			id integer not null primary key autoincrement,
+			name text,
+			description text,
+			users text
+		);
+		`
+		_, err = db.Exec(sqlStmt, sqlStmt2, sqlStmt3, sqlStmt4, sqlStmt5)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+}
+
+// create sample data for the database
+func createSampleData() {
+	db, err := sql.Open("sqlite3", "qaApp.db")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer db.Close()
+	sqlStmt := `
+	insert into users (first_name, last_name, username, unique_id, password, user_tags, user_type, user_image, super_user, mod_tags, mod_questions, badges)
+	values ("Sagar", "Yadav", "sagaryadav", 1, "password", "", "", "", false, "", "", "");
+	`
+	sqlStmt2 := `
+	insert into questions (heading, body, tags, image, date, time, user, answers, votes, views, open)
+	values ("How to use Go", "Go is a programming language", "go, programming", "", "", "", "sagaryadav", "", "", 0, true);
+	`
+	sqlStmt3 := `
+	insert into answers (body, date, time, user, votes, views, qn)
+	values ("Go is a programming language", "", "", "sagaryadav", "", 0, 1);
+	`
+	sqlStmt4 := `
+	insert into tags (name)
+	values ("go");
+	`
+	sqlStmt5 := `
+	insert into badges (name, description, users)
+	values ("Go", "Go is a programming language", "johndoe");
+	`
+	_, err = db.Exec(sqlStmt, sqlStmt2, sqlStmt3, sqlStmt4, sqlStmt5)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
 var testuser = User{
 	FirstName: "This is the firstName of the test user",
 	LastName:  "lastName",
@@ -104,6 +216,9 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
+	createDatabase()
+	createSampleData()
 
 	fs := http.FileServer(http.Dir("./public"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
