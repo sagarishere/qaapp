@@ -13,7 +13,7 @@ import (
 )
 
 type User struct {
-	FirstName     string
+	FirstName     string `json:"first_name"`
 	LastName      string
 	UserName      string
 	UniqueID      int        // unique id for the user. This auto-increments on adding a user
@@ -66,6 +66,7 @@ type Badge struct {
 type Tag struct {
 	TagID   int    // unique id for the tag. This auto-increments on adding a tag
 	TagName string // name of the tag
+	TagDesc string // description of the tag
 }
 
 // create an sqlite database named 'qaApp' if it doesn't exist
@@ -126,6 +127,7 @@ func createDatabase() {
 		create table tags (
 			id integer not null primary key autoincrement,
 			name text
+			desc text
 		);
 		`
 		sqlStmt5 := `
@@ -163,24 +165,17 @@ func createSampleData() {
 	values ("Go is a programming language", "", "", "sagaryadav", "", 0, 1);
 	`
 	sqlStmt4 := `
-	insert into tags (name)
-	values ("go");
+	insert into tags (name, desc)
+	values ("Go", "Go is a programming language made by Google");
 	`
 	sqlStmt5 := `
 	insert into badges (name, description, users)
-	values ("Go", "Go is a programming language", "johndoe");
+	values ("Curious", "Asks questions", "sagaryadav");
 	`
 	_, err = db.Exec(sqlStmt, sqlStmt2, sqlStmt3, sqlStmt4, sqlStmt5)
 	if err != nil {
 		fmt.Println(err)
 	}
-}
-
-var testuser = User{
-	FirstName: "This is the firstName of the test user",
-	LastName:  "lastName",
-	UserName:  "testUserName",
-	UniqueID:  1,
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
